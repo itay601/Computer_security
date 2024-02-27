@@ -1,7 +1,7 @@
 from flask import Flask , render_template, request, flash, redirect, url_for, make_response,Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-
+from login import connect_to_db
 from req_db import *
 from send_pass_to_email import reset_password_and_send_email
 
@@ -27,9 +27,23 @@ jwt = JWTManager(app)
                                                                    
                                                                                       
 
-    1. fix JWT(java web token) stuff
-	2. To system_screen.html : Add text box (query text) + dropdown menu (search by) to build a query 
-    3. change system_screen and /show endpoint to display table using the query from issue #2 instead of the its entirety
+    * Finish mail password restore page, run below code, redirect to "authenticated password change" page 
+   
+                        if validate_mail_code(username, mail_code):
+                            if compare_pass_history(username, password_new):                           
+                                sqlSelect = "SELECT password FROM users WHERE username=%s"
+                                cursor.execute(sqlSelect, (username , ))
+                                password_old = cursor.fetchone()
+                                if change_password(username, password_new, password_old):
+                                    print("Successs")
+
+
+    *** Return proper error messages such as duplicate email, duplicate phone number etc
+    
+   
+
+    
+
 '''
 
 
@@ -78,9 +92,11 @@ def change_password_():
         password_old = request.form['currentPassword']
         password_new = request.form['newPassword']
         if validate_password(username, password_old):
-            if change_password(username, password_new):
-                return render_template('login.html') 
-
+            if compare_pass_history(username, password_new):
+                if change_password(username, password_new, password_old):
+                    return render_template('login.html') 
+        return render_template('change_password.html') #Redirect nowhere, render error onto page here
+    
 @app.route('/forgot_password.html', methods=['GET','POST'])
 def forgot_password():
     if request.method == 'GET':
@@ -106,20 +122,11 @@ def system_screen():
 
 #Skeleton method, needs to be tailored to our needs
 @app.route('/show.html', methods=['GET'])
+@jwt_required()
 def show():
     if request.method == 'GET':
-        host = '127.0.0.1' 
-        user = 'root'
-        password = 'root'
-        dbname = 'USERS'
-
         # Connect to the database
-        connection = pymysql.connect(host=host,
-                                        user=user,
-                                        password=password,
-                                        database=dbname,
-                                        port=3306,
-                                        cursorclass=pymysql.cursors.DictCursor)
+        connection = connect_to_db()
 
         try:
             with connection.cursor() as cursor:

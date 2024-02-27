@@ -3,18 +3,18 @@
 #generate password chenge password in db and send emial with th password
 import pymysql
 import smtplib
+from login import connect_to_db
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+from argon2 import PasswordHasher
 
 
-
-def generate_random_password(length=12):
+def generate_random_password(length=10):
     import random
     import string
     characters = string.ascii_letters + string.digits + string.punctuation
     return ''.join(random.choice(characters) for _ in range(length))
-
 
 
 def send_email(receiver_email, subject, body):
@@ -41,18 +41,9 @@ def send_email(receiver_email, subject, body):
 
 
 def reset_password_and_send_email(email):
-    host = '127.0.0.1'
-    user = 'root'
-    password = 'my-secret-pw'
-    dbname = 'USERS'
-
     # Connect to the database
-    connection = pymysql.connect(host=host,
-                                user=user,
-                                password=password,
-                                database=dbname,
-                                port=3456,
-                                cursorclass=pymysql.cursors.DictCursor)
+    ph = PasswordHasher()
+    connection = connect_to_db();
 
     try:
         with connection.cursor() as cursor:
@@ -66,14 +57,14 @@ def reset_password_and_send_email(email):
                 new_password = generate_random_password()
                 username= user_data['username']
 
-                # Update the user's password in the database
-                sql_update_password = "UPDATE user SET password=%s WHERE username=%s"
-                cursor.execute(sql_update_password, (new_password, username))
+                # Update the user's temp password in the database
+                sql_update_password = "UPDATE userpass SET passwordtemp =%s WHERE uname =%s"
+                cursor.execute(sql_update_password, (ph.hash(new_password), username))
 
                 # Send the new password to the user's email
                 receiver_email = user_data['email']
                 email_subject = "Password Reset"
-                email_body = f"Your new password is: {new_password}"
+                email_body = f"Your temporary password is: {new_password}"
                 send_email(receiver_email, email_subject, email_body)
                 
                 print("Password reset successfully. Check your email for the new password.")
