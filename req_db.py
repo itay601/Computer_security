@@ -71,14 +71,19 @@ def validate_password(username, pWord):
             ph = PasswordHasher()
 
             # On success return 1
-            if ph.verify(pass_hash["password"], pWord):
-                return 1
+            if pass_hash:
+                    if ph.verify(pass_hash["password"], pWord):
+                        return 1
+                    else:
+                        print("Invalid username or password")
+                        return None
             else:
-                print("Invalid username or password")
-                return 0
+                return None
 
     except pymysql.Error as e:
         print(f"Database error: {e}")
+    except argon2.exceptions.VerificationError:
+        return None   
 
     finally:
         if connection:
@@ -96,6 +101,7 @@ def change_password(username, pWord):
         with connection.cursor() as cursor:
             # Check if the username and password match a user in the database
             sql = "UPDATE user SET password =%s WHERE username =%s"
+            ph = PasswordHasher()
             pHash = ph.hash(pWord)
             if ph.verify(pHash, pWord):
                 cursor.execute(
