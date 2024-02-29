@@ -17,7 +17,7 @@ from flask_jwt_extended import (
 )
 
 from req_db import *
-from send_pass_to_email import reset_password_and_send_email , reset_Code_and_send_email
+from send_pass_to_email import reset_password_and_send_email 
 
 
 app = Flask(__name__)

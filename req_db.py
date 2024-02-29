@@ -1,6 +1,7 @@
 import pymysql.cursors
 import random
 import string
+import argon2
 from argon2 import PasswordHasher
 
 
@@ -82,8 +83,11 @@ def validate_password(username, pWord):
 
     except pymysql.Error as e:
         print(f"Database error: {e}")
-    except argon2.exceptions.VerificationError:
+    except argon2.exceptions.InvalidHashError:
         return None   
+    except argon2.exceptions.VerifyMismatchError:
+        return None   
+
 
     finally:
         if connection:
