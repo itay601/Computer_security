@@ -38,21 +38,10 @@ def send_email(receiver_email, subject, body):
 from argon2 import PasswordHasher
 
 
-def reset_password_and_send_email(email):
-    host = "127.0.0.1"
-    user = "root"
-    password = "my-secret-pw"
-    dbname = "USERS"
 
-    # Connect to the database
-    connection = pymysql.connect(
-        host=host,
-        user=user,
-        password=password,
-        database=dbname,
-        port=3456,
-        cursorclass=pymysql.cursors.DictCursor,
-    )
+def reset_password_and_send_email(email):
+    ph = PasswordHasher()
+    connection = connect_to_db();
 
     try:
         with connection.cursor() as cursor:
@@ -60,36 +49,25 @@ def reset_password_and_send_email(email):
             sql_select_user = "SELECT * FROM user WHERE email=%s"
             cursor.execute(sql_select_user, (email,))
             user_data = cursor.fetchone()
-            print(user_data)
             if user_data:
                 # Generate a new random password
                 new_password = generate_random_password()
-                username = user_data["username"]
-                ph = PasswordHasher()
-                pHash = ph.hash(new_password)
+                username= user_data['username']
 
-                # Update the user's password in the database
-                sql_update_password = "UPDATE user SET password=%s WHERE username=%s"
-                cursor.execute(sql_update_password, (pHash, username))
-                
+                # Update the user's temp password in the database
+                sql_update_password = "UPDATE userpass SET passwordtemp =%s WHERE uname =%s"
+                cursor.execute(sql_update_password, (ph.hash(new_password), username))
 
                 # Send the new password to the user's email
-                receiver_email = user_data["email"]
+                receiver_email = user_data['email']
                 email_subject = "Password Reset"
-                email_body = f"Your new password is: {new_password}"
+                email_body = f"Your temporary password is: {new_password}"
                 send_email(receiver_email, email_subject, email_body)
 
-                print(
-                    "Password reset successfully. Check your email for the new password."
-                )
-                connection.commit()
-                return 1
+                print("Password reset successfully. Check your email for the new password.")
             else:
                 print("User not found.")
-
     except pymysql.Error as e:
         print(f"Database error: {e}")
-
     finally:
         connection.close()
-

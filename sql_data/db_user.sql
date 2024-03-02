@@ -5,19 +5,18 @@ CREATE TABLE user(
    username varchar(100) not null,
    email varchar(100) not null,
    password varchar(100) not null,
-   code varchar(100) ,
-   UNIQUE(email)
+   PRIMARY KEY(username), UNIQUE(email)
 );
 
-insert into user(username,email,password)
-values("Me" , "itaymerel1212@gmail.com" , "$argon2id$v=19$m=65536,t=3,p=4$IqKQwvcAjh7PezWlDpExhA$VeuX1EAVjkIx+dGK/qeCynjPfc1nqY+fi6jo2Ap8UPg");
 
+insert into user(username,email,password)
+values("Me" , "Ani@Secure.com" , "$argon2id$v=19$m=16,t=2,p=1$VXc5eWZNR1phb1JLN0hGcQ$VqDcMJuxpPLxba7FEwWRjg");
 
 CREATE TABLE clients(
    name varchar(100) not null,
    email varchar(100) not null,
    phone varchar(30) not null,
-   PRIMARY KEY(email), UNIQUE(email), UNIQUE(phone)
+   PRIMARY KEY(email), UNIQUE(phone)
 );
 
 insert into clients(name,email,phone)
@@ -29,8 +28,8 @@ CREATE TABLE userpass(
    passwordtemp varchar(100) not null,
    passwordsecond varchar(100) not null,
    passwordthird varchar(100) not null, 
-   PRIMARY KEY(id) 
+   PRIMARY KEY(id), FOREIGN KEY(uname) REFERENCES user(username), UNIQUE(uname)
 );
 
 insert into userpass(uname, passwordtemp, passwordsecond, passwordthird)
-values("Me","-","-","-");
+values("Me","$argon2id$v=19$m=16,t=2,p=1$VXc5eWZNR1phb1JLN0hGcQ$VqDcMJuxpPLxba7FEwWRjg","$argon2id$v=19$m=16,t=2,p=1$VXc5eWZNR1phb1JLN0hGcQ$VqDcMJuxpPLxba7FEwWRjg","$argon2id$v=19$m=16,t=2,p=1$VXc5eWZNR1phb1JLN0hGcQ$VqDcMJuxpPLxba7FEwWRjg");

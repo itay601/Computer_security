@@ -15,7 +15,7 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity,
 )
-
+from login import connect_to_db
 from req_db import *
 from send_pass_to_email import reset_password_and_send_email 
 
@@ -29,26 +29,16 @@ app.config[
 jwt = JWTManager(app)
 
 
-"""
-                                                                
-                                                                   
-888888888888  ,ad8888ba,    88888888ba,      ,ad8888ba,            
-     88      d8"'    `"8b   88      `"8b    d8"'    `"8b           
-     88     d8'        `8b  88        `8b  d8'        `8b          
-     88     88          88  88         88  88          88     888  
-     88     88          88  88         88  88          88     888  
-     88     Y8,        ,8P  88         8P  Y8,        ,8P          
-     88      Y8a.    .a8P   88      .a8P    Y8a.    .a8P      888  
-     88       `"Y8888Y"'    88888888Y"'      `"Y8888Y"'       888  
-                                                                   
-                                                                                      
-
-    
-	"""
 
 
 # need system_screen only with token in headers (not working)
 login_attempts = {}
+
+
+
+
+
+
 # need system_screen only with token in headers (not working)
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -99,7 +89,7 @@ def register():
 
 
 @app.route("/change_password.html", methods=["GET", "POST"])
-def Code_password_():
+def change_password_():
     if request.method == "GET":
         return render_template("change_password.html")
 
@@ -109,10 +99,13 @@ def Code_password_():
         password_new = request.form["newPassword1"]
 
         if validate_password(username, password_old):
-            if change_password(username, password_new):
-                return render_template("login.html",changed_pass="the password changed")
+            if compare_pass_history(username, password_new):
+                if change_password(username, password_new, password_old):
+                    return render_template("login.html",changed_pass="the password changed")
+                else:
+                    return render_template("change_password.html",message="something happend try again" )
             else:
-                return render_template("change_password.html",message="something happend try again" )        
+                return  render_template("change_password.html",message="you used this password recently, try a different one!" )          
         else:
             return render_template("change_password.html",message="user or pass wrong try again" )
             
@@ -144,23 +137,10 @@ def system_screen():
 
 # Skeleton method, needs to be tailored to our needs
 @app.route("/show.html", methods=["GET"])
+@jwt_required()
 def show():
     if request.method == "GET":
-        host = "127.0.0.1"
-        user = "root"
-        password = "my-secret-pw"
-        dbname = "USERS"
-
-        # Connect to the database
-        connection = pymysql.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=dbname,
-            port=3456,
-            cursorclass=pymysql.cursors.DictCursor,
-        )
-
+        connection = connect_to_db()
         try:
             with connection.cursor() as cursor:
                 sql = "SELECT * FROM clients;"  # Change statement accordingly
