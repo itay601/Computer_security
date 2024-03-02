@@ -5,7 +5,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
-
+from login import connect_to_db
 
 def generate_random_password(length=12):
     import random
@@ -65,6 +65,7 @@ def reset_password_and_send_email(email):
                 send_email(receiver_email, email_subject, email_body)
 
                 print("Password reset successfully. Check your email for the new password.")
+                return 1
             else:
                 print("User not found.")
     except pymysql.Error as e:

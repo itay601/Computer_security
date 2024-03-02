@@ -49,7 +49,7 @@ def index():
         username = request.form["username"]
         password = request.form["password"]
         # Check if the user has exceeded the login attempts
-        if username in login_attempts and login_attempts[username] >= 50:
+        if username in login_attempts and login_attempts[username] >= 3:
             return render_template("forgot_password.html",message1="only email for now ,to much login requests!!")
 
         if validate_password(username, password):
@@ -108,7 +108,45 @@ def change_password_():
                 return  render_template("change_password.html",message="you used this password recently, try a different one!" )          
         else:
             return render_template("change_password.html",message="user or pass wrong try again" )
+  
+  
+  
             
+@app.route("/email_password.html", methods=["GET", "POST"])
+def email_password_():
+    if request.method == "GET":
+        return render_template("email_password.html")
+
+    elif request.method == "POST":
+        username = request.form["username"]
+        password_old = request.form["currentPassword"]
+        password_new = request.form["newPassword1"]
+        if validate_mail_code(username, mail_code):
+            if compare_pass_history(username, password_new):
+                sqlSelect = "SELECT password FROM users WHERE username=%s"
+                cursor.execute(sqlSelect, (username , ))
+                password_old = cursor.fetchone()
+                if change_password(username, password_new, password_old):
+                    print("Successs") 
+                    return render_template("login.html",changed_pass="the password changed")   
+                else:
+                    return render_template("email_password.html",message="something happend try again" ) 
+            else:
+                return  render_template("email_password.html",message="you used this password recently, try a different one!" )
+        else:
+            return render_template("email_password.html",message="invalid code" )
+                           
+                    
+        '''if validate_password(username, password_old):
+            if compare_pass_history(username, password_new):
+                if change_password(username, password_new, password_old):
+                    return render_template("login.html",changed_pass="the password changed")
+                else:
+                    return render_template("email_password.html",message="something happend try again" )
+            else:
+                return  render_template("email_password.html",message="you used this password recently, try a different one!" )          
+        else:
+            return render_template("email_password.html",message="user or pass wrong try again" )'''
 
 
 

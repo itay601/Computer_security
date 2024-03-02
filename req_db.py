@@ -209,7 +209,23 @@ def register_new_user(username, email, pWord):
         if connection:
             connection.close()
 
+def register_new_client(username, email, phoneNum):
+    try:
+        connection = connect_to_db()
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO clients (name, email, phone) VALUES (%s, %s, %s)"
+            values = (username, email, phoneNum)
+            cursor.execute(sql, values)
+        # Commit the changes to the database
+        connection.commit()
+        print("Client registered successfully!")
 
+    except pymysql.Error as e:
+        print(f"Error: {e}")
+
+    finally:
+        if connection:
+            connection.close()
 
 def generate_random_password(length=12):
     characters = string.ascii_letters + string.digits + string.punctuation
@@ -237,7 +253,7 @@ def show_user_db():
 
 
 ###working and checked
-def show_client_db():
+def show_clientent_db():
     # Connect to the database
     try:
         connection = connect_to_db()

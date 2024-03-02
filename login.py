@@ -9,7 +9,7 @@ TOKEN_EXPIRATION_SECONDS = 3600  # Set the expiration time for the token (e.g., 
 def connect_to_db():
     host = "127.0.0.1"
     user = "root"
-    password = "root"
+    password = "my-secret-pw"
     dbname = "USERS"
 
     # Connect to the database
@@ -18,7 +18,7 @@ def connect_to_db():
         user=user,
         password=password,
         database=dbname,
-        port=3306,
+        port=3456,
         cursorclass=pymysql.cursors.DictCursor,
     )
 
