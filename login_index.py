@@ -121,7 +121,7 @@ def email_password_():
         username = request.form["username"]
         password_old = request.form["currentPassword"]
         password_new = request.form["newPassword1"]
-        if validate_mail_code(username, mail_code):
+        if validate_mail_code(username, password_old):
             if compare_pass_history(username, password_new):
                 sqlSelect = "SELECT password FROM users WHERE username=%s"
                 cursor.execute(sqlSelect, (username , ))
@@ -157,7 +157,7 @@ def forgot_password():
     if request.method == "POST":
         mail = request.form["email"]
         if reset_password_and_send_email(mail):### in this function we need to insert the code to db 
-            return render_template("change_password.html",message="enter code you got from email")
+            return render_template("email_password.html",message="enter code you got from email")
         else: 
             #something happend massage to client
             return render_template("forgot_password.html",message1="something heppand try agian")

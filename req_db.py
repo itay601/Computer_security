@@ -175,7 +175,11 @@ def change_password(username, pWord, oldpHash): # Assumed authenticated, we auth
                 raise pymysql.Error
     except pymysql.Error as e:
         print(f"Database error: {e}")
-        return 0
+    except argon2.exceptions.InvalidHashError:
+        return None   
+    except argon2.exceptions.VerifyMismatchError:
+        return None  
+
     finally:
         if connection:
             connection.close()
@@ -295,6 +299,10 @@ def validate_mail_code(username, pWord):
 
     except pymysql.Error as e:
         print(f"Database error: {e}")
+    except argon2.exceptions.InvalidHashError:
+        return None   
+    except argon2.exceptions.VerifyMismatchError:
+        return None  
 
     finally:
         if connection:
